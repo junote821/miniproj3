@@ -17,11 +17,11 @@ from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
 
 # Day3 본체
-from sub_agents.day3.impl.agent import Day3Agent
+from student.day3.impl.agent import Day3Agent
 # 공용 렌더/저장/스키마
-from sub_agents.common.fs_utils import save_markdown
-from sub_agents.common.writer import render_day3, render_enveloped
-from sub_agents.common.schemas import Day3Plan
+from student.common.fs_utils import save_markdown
+from student.common.writer import render_day3, render_enveloped
+from student.common.schemas import Day3Plan
 
 
 # ------------------------------------------------------------------------------

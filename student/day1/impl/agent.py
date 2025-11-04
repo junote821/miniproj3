@@ -10,12 +10,12 @@ from typing import Optional, Dict, Any, List, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from google.adk.models.lite_llm import LiteLlm
-from sub_agents.common.schemas import Day1Plan
-from sub_agents.day1.impl.merge import merge_day1_payload
+from student.common.schemas import Day1Plan
+from student.day1.impl.merge import merge_day1_payload
 # 외부 I/O
-from sub_agents.day1.impl.tavily_client import search_tavily, extract_url
-from sub_agents.day1.impl.finance_client import get_quotes
-from sub_agents.day1.impl.web_search import (
+from student.day1.impl.tavily_client import search_tavily, extract_url
+from student.day1.impl.finance_client import get_quotes
+from student.day1.impl.web_search import (
     looks_like_ticker,
     search_company_profile,
     extract_and_summarize_profile,

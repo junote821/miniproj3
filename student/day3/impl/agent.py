@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Dict, Any
 import os
 
-from sub_agents.common.schemas import Day3Plan
+from student.common.schemas import Day3Plan
 
 # 수집 → 정규화 → 랭크 모듈
 from . import fetchers          # NIPA, Bizinfo, 일반 Web 수집

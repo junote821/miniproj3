@@ -18,11 +18,11 @@ from google.adk.models.lite_llm import LiteLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
 
-from sub_agents.common.schemas import Day1Plan
-from sub_agents.common.writer import render_day1, render_enveloped
-from sub_agents.common.fs_utils import save_markdown
-from sub_agents.day1.impl.agent import Day1Agent
-
+from student.common.schemas import Day1Plan
+from student.common.writer import render_day1, render_enveloped
+from student.common.fs_utils import save_markdown
+from student.day1.impl.agent import Day1Agent
+from student.day1.impl.web_search import looks_like_ticker
 
 # ------------------------------------------------------------------------------
 # TODO[DAY1-A-01] 모델 선택
@@ -120,35 +120,49 @@ def _handle(query: str) -> Dict[str, Any]:
     # TODO[DAY1-A-04] 구현 지침
     #  - 1) api_key = os.getenv("TAVILY_API_KEY","")
     #  - 2) tickers = _normalize_kr_tickers(_extract_tickers_from_query(query))
+    #       * 보강: looks_like_ticker()로 실제 티커처럼 생긴 것만 남기기
+    #         (예: "NIPA", "바우처" 같은 일반 단어가 주가 조회로 가지 않도록)
     #  - 3) plan = Day1Plan(
     #         do_web=True,
     #         do_stocks=bool(tickers),
     #         web_keywords=[query],
-    #         tickers=tickers
+    #         tickers=tickers,
+    #         output_style="report",
     #       )
-    #  - 4) agent = Day1Agent(tavily_api_key=api_key)
+    #  - 4) agent = Day1Agent(tavily_api_key=api_key, web_topk=6, request_timeout=20)
     #  - 5) return agent.handle(query, plan)
     # ----------------------------------------------------------------------------
     # 정답 구현:
-    api_key = os.getenv("TAVILY_API_KEY", "")
-    tickers = _normalize_kr_tickers(_extract_tickers_from_query(query))
+    import os
+    from student.day1.impl.web_search import looks_like_ticker
 
+    # 1) API 키
+    api_key = os.getenv("TAVILY_API_KEY", "")
+
+    # 2) 티커 추출 → 한국형 보정 → 실제 티커처럼 보이는 것만 남김
+    raw = _extract_tickers_from_query(query)
+    normalized = _normalize_kr_tickers(raw)
+    tickers = [t for t in normalized if looks_like_ticker(t)]
+
+    # 3) 계획 구성
     plan = Day1Plan(
         do_web=True,
         do_stocks=bool(tickers),
         web_keywords=[query],
         tickers=tickers,
-        # (선택) 출력 스타일 확장 가능: "report" 등
         output_style="report",
     )
 
+    # 4) 에이전트 생성
     agent = Day1Agent(
         tavily_api_key=api_key,
-        # (선택) 파라미터: 웹 상위 K, 타임아웃 등 구현체가 지원 시 전달
         web_topk=6,
         request_timeout=20,
     )
+
+    # 5) 실행
     return agent.handle(query, plan)
+
 
 
 def before_model_callback(

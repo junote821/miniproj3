@@ -4,7 +4,7 @@ import os, json
 from typing import Dict, Any, List
 import numpy as np
 
-from sub_agents.common.schemas import Day2Plan
+from student.common.schemas import Day2Plan
 from .embeddings import Embeddings
 from .store import FaissStore
 

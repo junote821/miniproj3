@@ -120,12 +120,30 @@ def render_day3(query: str, payload: Dict[str, Any]) -> str:
     items = payload.get("items", [])
     lines = [f"# 공고 탐색 결과", f"- 질의: {query}", ""]
     if items:
-        lines.append("| 제목 | 기관 | 접수 마감 | 예산 | 점수 |")
-        lines.append("|---|---|---|---:|---:|")
+        lines.append("| 출처 | 제목 | 기관 | 접수 마감 | 예산 | URL | 점수 |")
+        lines.append("|---|---|---|---:|---:|---|---:|")
         for it in items[:10]:
-            lines.append(f"| {it.get('title','-')} | {it.get('agency','-')} | {it.get('close_date','-')} | {it.get('budget','-')} | {it.get('score',0):.3f} |")
+            src = it.get('source','-')
+            title = it.get('title','-')
+            agency = it.get('agency','-')
+            close = it.get('close_date','-')
+            budget = it.get('budget','-')
+            url = it.get('url','-')
+            score = it.get('score',0)
+            lines.append(f"| {src} | {title} | {agency} | {close or '-'} | {budget or '-'} | {url} | {score:.3f} |")
     else:
         lines.append("관련 공고를 찾지 못했습니다.")
+        
+    has_atts = any(it.get("attachments") for it in items)
+    if has_atts:
+        lines.append("\n## 첨부파일 요약")
+        for i, it in enumerate(items[:10], 1):
+            atts = it.get("attachments") or []
+            if not atts: 
+                continue
+            lines.append(f"- **{i}. {it.get('title','(제목)')}**")
+            for a in atts[:5]:
+                lines.append(f"  - {a}")
     return "\n".join(lines)
 
 # --------- Envelope(머리말/푸터) ---------

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-정부/공공 포털 및 일반 웹에서 '사업 공고'를 찾기 위한 검색 래퍼
+정부/공공 포털 및 일반 웹에서 '사업 공고'를 찾기 위한 검색 래퍼 (강사용/답지 버전)
 
 설계 포인트
 - '도메인 제한' + '키워드 보강'을 동시에 사용해 노이즈를 줄입니다.
@@ -16,8 +16,8 @@
 from typing import List, Dict, Any, Optional
 import os
 
-# Day1에서 제작한 Tavily 래퍼를 재사용합니다.
-from sub_agents.day1.impl.tavily_client import search_tavily
+# Day1에서 제작한 Tavily 래퍼를 재사용합니다. (경로 주의: sub_agents → student)
+from student.day1.impl.tavily_client import search_tavily
 
 DEFAULT_TOPK = 7
 DEFAULT_TIMEOUT = 20
@@ -26,6 +26,7 @@ DEFAULT_TIMEOUT = 20
 NIPA_TOPK = 3
 BIZINFO_TOPK = 2
 WEB_TOPK = 2
+
 
 def fetch_nipa(query: str, topk: int = NIPA_TOPK) -> List[Dict[str, Any]]:
     """
@@ -39,8 +40,11 @@ def fetch_nipa(query: str, topk: int = NIPA_TOPK) -> List[Dict[str, Any]]:
     # 2) 질의 q를 만들 때: f"{query} 공고 모집 지원 site:nipa.kr"
     # 3) search_tavily(q, key, top_k=topk, timeout=DEFAULT_TIMEOUT, include_domains=["nipa.kr"])
     # 4) 그대로 반환
+    # ───────────────────────────────────────────────────────────────
     # 정답 구현:
     key = os.getenv("TAVILY_API_KEY", "")
+    if not key:
+        return []
     q = f"{query} 공고 모집 지원 site:nipa.kr"
     return search_tavily(
         q,
@@ -50,6 +54,7 @@ def fetch_nipa(query: str, topk: int = NIPA_TOPK) -> List[Dict[str, Any]]:
         include_domains=["nipa.kr"],
     )
 
+
 def fetch_bizinfo(query: str, topk: int = BIZINFO_TOPK) -> List[Dict[str, Any]]:
     """
     Bizinfo(기업마당) 도메인에 한정한 사업 공고 검색
@@ -58,8 +63,11 @@ def fetch_bizinfo(query: str, topk: int = BIZINFO_TOPK) -> List[Dict[str, Any]]:
     """
     # TODO[DAY3-F-02]:
     # 위 NIPA와 동일한 패턴이며, site:bizinfo.go.kr / include_domains=["bizinfo.go.kr"] 를 사용
+    # ───────────────────────────────────────────────────────────────
     # 정답 구현:
     key = os.getenv("TAVILY_API_KEY", "")
+    if not key:
+        return []
     q = f"{query} 공고 모집 지원 site:bizinfo.go.kr"
     return search_tavily(
         q,
@@ -68,6 +76,7 @@ def fetch_bizinfo(query: str, topk: int = BIZINFO_TOPK) -> List[Dict[str, Any]]:
         timeout=DEFAULT_TIMEOUT,
         include_domains=["bizinfo.go.kr"],
     )
+
 
 def fetch_web(query: str, topk: int = WEB_TOPK) -> List[Dict[str, Any]]:
     """
@@ -79,8 +88,11 @@ def fetch_web(query: str, topk: int = WEB_TOPK) -> List[Dict[str, Any]]:
     # 1) 키 읽기
     # 2) q = f"{query} 모집 공고 지원 사업"
     # 3) search_tavily(q, key, top_k=topk, timeout=DEFAULT_TIMEOUT)
+    # ───────────────────────────────────────────────────────────────
     # 정답 구현:
     key = os.getenv("TAVILY_API_KEY", "")
+    if not key:
+        return []
     q = f"{query} 모집 공고 지원 사업"
     return search_tavily(
         q,
@@ -88,6 +100,7 @@ def fetch_web(query: str, topk: int = WEB_TOPK) -> List[Dict[str, Any]]:
         top_k=topk,
         timeout=DEFAULT_TIMEOUT,
     )
+
 
 def fetch_all(query: str) -> List[Dict[str, Any]]:
     """
@@ -97,18 +110,19 @@ def fetch_all(query: str) -> List[Dict[str, Any]]:
     # TODO[DAY3-F-04]:
     # - 위 세 함수를 순서대로 호출해 리스트를 이어붙여 반환
     # - 실패 시 빈 리스트라도 반환(try/except로 유연 처리 가능)
+    # ───────────────────────────────────────────────────────────────
     # 정답 구현:
-    items: List[Dict[str, Any]] = []
+    results: List[Dict[str, Any]] = []
     try:
-        items += fetch_nipa(query, NIPA_TOPK)
+        results.extend(fetch_nipa(query))
     except Exception:
         pass
     try:
-        items += fetch_bizinfo(query, BIZINFO_TOPK)
+        results.extend(fetch_bizinfo(query))
     except Exception:
         pass
     try:
-        items += fetch_web(query, WEB_TOPK)
+        results.extend(fetch_web(query))
     except Exception:
         pass
-    return items
+    return results

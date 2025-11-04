@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-raw → GovNotice 표준 스키마 정규화
+raw → GovNotice 표준 스키마 정규화 (강사용/답지)
 - fetchers.py에서 온 Day1형 raw 결과를 GovNotice 필드로 매핑
 - URL 중복 제거
 """
@@ -8,6 +8,7 @@ from typing import List, Dict
 from datetime import datetime
 
 DATE_FMTS = ("%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d", "%Y-%m-%dT%H:%M:%S%z")
+
 
 def _as_date_iso(s: str) -> str:
     if not s:
@@ -25,6 +26,7 @@ def _as_date_iso(s: str) -> str:
         except Exception:
             pass
     return ""
+
 
 def normalize_all(raw_items: List[Dict]) -> List[Dict]:
     norm: List[Dict] = []
